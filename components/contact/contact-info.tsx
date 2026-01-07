@@ -5,8 +5,8 @@ export default function ContactInfo() {
     {
       icon: Phone,
       label: "Phone",
-      value: "+234 (0) 123 456 7890",
-      link: "tel:+2341234567890",
+      value: "+234 (0) 808 335 1686",
+      link: "tel:+2348083351686",
     },
     {
       icon: Mail,
@@ -17,7 +17,7 @@ export default function ContactInfo() {
     {
       icon: MapPin,
       label: "Office Address",
-      value: "123 Ikoyi Lane, Lagos, Nigeria",
+      value: "Abuja Nigeria",
       link: "#",
     },
     {
@@ -51,7 +51,7 @@ export default function ContactInfo() {
 
       <div className="mt-12 pt-8 border-t border-neutral-light">
         <h3 className="text-xl font-bold text-primary mb-4 tracking-wider">Quick Connect</h3>
-        <a href="https://wa.me/2341234567890" className="btn-primary inline-flex items-center gap-2 px-8 py-4">
+        <a href="https://wa.me/2348083351686" className="btn-primary inline-flex items-center gap-2 px-8 py-4">
           Message on WhatsApp
         </a>
       </div>
