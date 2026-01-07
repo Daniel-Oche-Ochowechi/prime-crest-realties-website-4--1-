@@ -83,14 +83,15 @@ async function runMigrations() {
         console.log("✅ Connected to database")
 
         const migrationFiles = [
-            "scripts/001_create_tables.sql",
-            "scripts/04-create-user-profiles-and-featured.sql",
-            "scripts/05-fix-rls.sql",
-            "scripts/06-create-settings.sql",
-            "scripts/07-relax-settings-rls.sql",
-            "scripts/08-setup-storage-policies.sql",
-            "scripts/09-fix-everything.sql",
-            "scripts/10-smart-rls-fix.sql",
+            // "scripts/001_create_tables.sql",
+            // "scripts/04-create-user-profiles-and-featured.sql",
+            // "scripts/05-fix-rls.sql",
+            // "scripts/06-create-settings.sql",
+            // "scripts/07-relax-settings-rls.sql",
+            // "scripts/08-setup-storage-policies.sql",
+            // "scripts/09-fix-everything.sql",
+            // "scripts/10-smart-rls-fix.sql",
+            "scripts/11-final-fix-rls.sql",
         ]
 
         for (const file of migrationFiles) {

@@ -1,6 +1,4 @@
-"use client"
 
-import { useEffect, useState } from "react"
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import PropertyGallery from "@/components/property/property-gallery"
@@ -10,74 +8,21 @@ import PropertyAmenities from "@/components/property/property-amenities"
 import PropertyMap from "@/components/property/property-map"
 import MessageForm from "@/components/property/message-form"
 import SimilarProperties from "@/components/property/similar-properties"
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/server"
+import { notFound } from "next/navigation"
 
-export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
-  const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
-  const [property, setProperty] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  const { id } = resolvedParams
 
-  useEffect(() => {
-    let isMounted = true
+  const supabase = await createClient()
+  const { data: property, error } = await supabase.from("properties").select("*").eq("id", id).single()
 
-    const resolveAndFetch = async () => {
-      try {
-        const resolved = await params
-        if (!isMounted) return
-
-        setResolvedParams(resolved)
-
-        const supabase = createClient()
-        const { data, error } = await supabase.from("properties").select("*").eq("id", resolved.id).single()
-
-        if (!isMounted) return
-
-        if (error) {
-          console.error("[v0] Error fetching property:", error)
-          setProperty(null)
-        } else {
-          setProperty(data)
-        }
-      } catch (err) {
-        console.error("[v0] Error resolving params:", err)
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
+  if (error || !property) {
+    if (error && error.code !== 'PGRST116') {
+      console.error("[v0] Error fetching property:", error)
     }
-
-    resolveAndFetch()
-
-    return () => {
-      isMounted = false
-    }
-  }, [params])
-
-  if (isLoading) {
-    return (
-      <div className="bg-white min-h-screen">
-        <Navbar />
-        <div className="pt-32 pb-12 text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-          <p className="mt-4 text-sm uppercase tracking-widest text-neutral-400">Loading property...</p>
-        </div>
-        <Footer />
-      </div>
-    )
-  }
-
-  if (!property) {
-    return (
-      <div className="bg-white min-h-screen">
-        <Navbar />
-        <div className="pt-32 pb-12 text-center text-neutral-gray">
-          <h1 className="text-2xl font-bold mb-4">Property not found</h1>
-          <p>The property you're looking for doesn't exist or has been removed.</p>
-        </div>
-        <Footer />
-      </div>
-    )
+    notFound()
   }
 
   const transformedProperty = {
@@ -151,3 +96,4 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     </div>
   )
 }
+
