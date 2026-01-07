@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createClient } from "@/lib/supabase/client"
 import type { Property } from "@/lib/types/database"
 import { useToast } from "@/hooks/use-toast"
+import { createProperty, updateProperty, uploadPropertyImage } from "@/actions/properties"
 
 interface PropertyFormModalProps {
   isOpen: boolean
@@ -102,8 +102,6 @@ export default function PropertyFormModal({ isOpen, onClose, property }: Propert
     e.preventDefault()
     setIsSubmitting(true)
 
-    const supabase = createClient()
-
     try {
       const propertyData = {
         title: formData.title,
@@ -129,19 +127,13 @@ export default function PropertyFormModal({ isOpen, onClose, property }: Propert
       }
 
       if (property) {
-        const { error } = await supabase.from("properties").update(propertyData).eq("id", property.id)
-
-        if (error) throw error
-
+        await updateProperty(property.id, propertyData)
         toast({
           title: "Success",
           description: "Property updated successfully",
         })
       } else {
-        const { error } = await supabase.from("properties").insert(propertyData)
-
-        if (error) throw error
-
+        await createProperty(propertyData)
         toast({
           title: "Success",
           description: "Property created successfully",
@@ -165,7 +157,6 @@ export default function PropertyFormModal({ isOpen, onClose, property }: Propert
     if (!files || files.length === 0) return
 
     setIsUploading(true)
-    const supabase = createClient()
     const newImages: string[] = []
 
     try {
@@ -190,28 +181,13 @@ export default function PropertyFormModal({ isOpen, onClose, property }: Propert
           continue
         }
 
-        const fileExt = file.name.split(".").pop()
-        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
-        const filePath = `${fileName}`
+        const formData = new FormData()
+        formData.append("file", file)
 
-        const { error: uploadError } = await supabase.storage
-          .from("properties")
-          .upload(filePath, file)
+        const publicUrl = await uploadPropertyImage(formData)
 
-        if (uploadError) {
-          console.error("Upload error:", uploadError)
-          toast({
-            title: "Upload failed",
-            description: `Failed to upload ${file.name}`,
-            variant: "destructive",
-          })
-          continue
-        }
-
-        const { data } = supabase.storage.from("properties").getPublicUrl(filePath)
-
-        if (data) {
-          newImages.push(data.publicUrl)
+        if (publicUrl) {
+          newImages.push(publicUrl)
         }
       }
 
@@ -347,7 +323,7 @@ export default function PropertyFormModal({ isOpen, onClose, property }: Propert
                     </Select>
                   </div>
                 </div>
-              <div className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
@@ -358,13 +334,13 @@ export default function PropertyFormModal({ isOpen, onClose, property }: Propert
                   />
                 </div>
                 <div className="space-y-2">
-                   <Label htmlFor="video_url">Video URL (YouTube/Vimeo)</Label>
-                   <Input
-                     id="video_url"
-                     value={formData.video_url}
-                     onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-                     placeholder="https://www.youtube.com/watch?v=..."
-                   />
+                  <Label htmlFor="video_url">Video URL (YouTube/Vimeo)</Label>
+                  <Input
+                    id="video_url"
+                    value={formData.video_url}
+                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
                 </div>
               </div>
 
@@ -618,3 +594,4 @@ export default function PropertyFormModal({ isOpen, onClose, property }: Propert
     </AnimatePresence>
   )
 }
+
